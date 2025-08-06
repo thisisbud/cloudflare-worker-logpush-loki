@@ -7,6 +7,6 @@
     "enabled": true,
   },
   "vars": {
-    "lokiHost": "https://logs-prod-us-central1.grafana.net/loki/api/v1/push",
+    "lokiHost": "https://thisisbud.grafana.net/loki/api/v1/push",
   },
 }
