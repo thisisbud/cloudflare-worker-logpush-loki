@@ -1,7 +1,7 @@
 {
   "compatibility_date": "2025-05-09",
   "main": "src/index.js",
-  "name": "cloudflare-worker-loki",
+  "name": "cloudflare-worker-logpush-loki",
   "workers_dev": true,
   "observability": {
     "enabled": true,
