@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "name": "cloudflare-worker-logpush-loki",
   "workers_dev": true,
+  "preview_urls": false,
   "observability": {
     "enabled": true
   },

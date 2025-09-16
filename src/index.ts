@@ -57,9 +57,9 @@ async function pushLogs(
       values: never[]
     }[]
   },
-  credentials: string,
   env: Env,
 ) {
+  console.log('Pre agent')
   const agent = new https.Agent({
     cert: env.tls_cert,
     key: env.tls_key,
@@ -68,8 +68,11 @@ async function pushLogs(
     // It disables SSL/TLS certificate verification. Use this with caution! ⚠️
     rejectUnauthorized: false,
   })
+  console.log('Post agent')
 
   const lokiServer = env.lokiHost
+
+  console.log('Pre fetch')
   const req = await nodeFetch(lokiServer, {
     agent: agent,
     body: JSON.stringify(payload),
@@ -79,19 +82,21 @@ async function pushLogs(
     },
   })
 
+  console.log('Post fetch')
+
   return req
 }
 
 export default {
   async fetch(request, env) {
     const { searchParams } = new URL(request.url)
-    const job = searchParams.get('job')
-
-    const authHeader = request.headers.get('authorization')
+    const job = searchParams.get('job') || "cloudflare-worker-logs";
     const contentEncoding = request.headers.get('content-encoding')
     const contentType = request.headers.get('content-type')
 
     if (request.method !== 'POST') {
+      console.log('Not a post')
+
       return new Response(
         JSON.stringify(
           { success: false, message: 'please authenticate and use POST requests' },
@@ -101,19 +106,17 @@ export default {
       )
     }
 
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify(
-          { success: false, message: 'please authenticate' },
-          // @ts-expect-error - from the original code
-          { headers: { 'content-type': 'application/json' } },
-        ),
-      )
-    }
+    console.log('Pre transform')
 
     const output = await transformLogs({ payload: request, contentEncoding, job, contentType })
 
-    await pushLogs(output, authHeader, env)
+    console.log('Post transform')
+
+    console.log('Pre push')
+
+    await pushLogs(output, env)
+
+    console.log('Post push')
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { 'content-type': 'application/json' },
