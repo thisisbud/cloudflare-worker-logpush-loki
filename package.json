@@ -8,10 +8,12 @@
   "private": true,
   "scripts": {
     "start": "wrangler dev",
+    "types": "wrangler types",
     "format": "prettier --write '*.{json,js}' 'src/**/*.{js,ts}'",
     "deploy": "npm run format && wrangler deploy"
   },
   "dependencies": {
+    "node-fetch": "^3.3.2",
     "pako": "^2.1.0"
   }
 }
