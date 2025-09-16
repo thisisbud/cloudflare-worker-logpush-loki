@@ -4,7 +4,7 @@
     "nodejs_compat"
   ],
   "main": "src/index.ts",
-  "name": "cloudflare-worker-loki",
+  "name": "cloudflare-worker-logpush-loki",
   "workers_dev": true,
   "observability": {
     "enabled": true
