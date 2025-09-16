@@ -1,6 +1,8 @@
 import { inflate } from 'pako'
+import nodeFetch from 'node-fetch'
+import https from 'node:https'
 
-async function transformLogs(obj) {
+async function transformLogs(obj: any) {
   const encoding = obj.contentEncoding || undefined
   let payload = obj.payload
   const jobname = obj.job || 'cloudflare_logpush'
@@ -32,28 +34,51 @@ async function transformLogs(obj) {
     if (obj.contentType.includes('application/text')) {
       log = await payload.text()
     }
+    // @ts-expect-error - from the original code
     lokiFormat.streams[0].values.push([date.toString(), JSON.stringify(log)])
     return lokiFormat
   }
 
   log.forEach((element) => {
     const date = element.EdgeStartTimestamp || new Date().getTime() * 1000000
+    // @ts-expect-error - from the original code
     lokiFormat.streams[0].values.push([date.toString(), element])
   })
 
   return lokiFormat
 }
 
-async function pushLogs(payload, credentials, env) {
+async function pushLogs(
+  payload: {
+    streams: {
+      stream: {
+        job: any
+      }
+      values: never[]
+    }[]
+  },
+  credentials: string,
+  env: Env,
+) {
+  const agent = new https.Agent({
+    cert: env.tls_cert,
+    key: env.tls_key,
+    ca: env.ca_cert,
+    // The 'rejectUnauthorized: false' option is the equivalent of curl's '--insecure'
+    // It disables SSL/TLS certificate verification. Use this with caution! ⚠️
+    rejectUnauthorized: false,
+  })
+
   const lokiServer = env.lokiHost
-  const req = await fetch(lokiServer, {
+  const req = await nodeFetch(lokiServer, {
+    agent: agent,
     body: JSON.stringify(payload),
     method: 'POST',
     headers: {
-      Authorization: credentials,
       'Content-Type': 'application/json',
     },
   })
+
   return req
 }
 
@@ -70,6 +95,7 @@ export default {
       return new Response(
         JSON.stringify(
           { success: false, message: 'please authenticate and use POST requests' },
+          // @ts-expect-error - from the original code
           { headers: { 'content-type': 'application/json' } },
         ),
       )
@@ -79,15 +105,18 @@ export default {
       return new Response(
         JSON.stringify(
           { success: false, message: 'please authenticate' },
+          // @ts-expect-error - from the original code
           { headers: { 'content-type': 'application/json' } },
         ),
       )
     }
-    const output = await transformLogs({ payload: await request, contentEncoding, job, contentType })
+
+    const output = await transformLogs({ payload: request, contentEncoding, job, contentType })
 
     await pushLogs(output, authHeader, env)
+
     return new Response(JSON.stringify({ success: true }), {
       headers: { 'content-type': 'application/json' },
     })
   },
-}
+} satisfies ExportedHandler<Env>

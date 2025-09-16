@@ -1,12 +1,15 @@
 {
   "compatibility_date": "2025-05-09",
-  "main": "src/index.js",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "main": "src/index.ts",
   "name": "cloudflare-worker-loki",
   "workers_dev": true,
   "observability": {
-    "enabled": true,
+    "enabled": true
   },
   "vars": {
-    "lokiHost": "https://thisisbud.grafana.net/loki/api/v1/push"
-  },
+    "lokiHost": "https://loki-observation.bud-infra-europe-west2.thisisbud.com/cloudflare-worker-logs/loki/api/v1/push"
+  }
 }
