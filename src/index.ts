@@ -72,6 +72,8 @@ async function pushLogs(
 
   const lokiServer = env.lokiHost
 
+  console.log({ payload })
+
   console.log('Pre fetch')
   const req = await nodeFetch(lokiServer, {
     agent: agent,
@@ -90,7 +92,7 @@ async function pushLogs(
 export default {
   async fetch(request, env) {
     const { searchParams } = new URL(request.url)
-    const job = searchParams.get('job') || "cloudflare-worker-logs";
+    const job = searchParams.get('job') || 'cloudflare-worker-logs'
     const contentEncoding = request.headers.get('content-encoding')
     const contentType = request.headers.get('content-type')
 
